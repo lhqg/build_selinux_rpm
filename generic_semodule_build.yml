@@ -1,0 +1,109 @@
+name: Run Generic SELinux module build
+
+on: 
+  workflow_call:
+    inputs:
+      source_repo_location:
+        description: 'Provides the directory where the source repository was checked out'
+        required: false
+        default: 'SOURCE_REPO'
+        type: string
+      spec_file_location:
+        description: 'Provides the relative path to the source_repository of the SPEC file'
+        required: true
+        default: ''
+        type: string
+      selinux_files_location:
+        description: 'Provides the relative path to the source_repository of the SELinux files'
+        required: true
+        default: ''
+        type: string
+      build_os_matrix:
+        description: 'Provides the relative path of the SELinux files'
+        required: false
+        default: '[ "centos_7", "centos_stream8", "centos_stream9", "fedora_36", "fedora_37", "fedora_38", "fedora_39", "fedora_40" ]'
+        type: string
+      release_upload_url:
+        description: 'Provides the URL to upload the built rpm to the provided release'
+        required: false
+        default: ''
+        type: string
+      provided_version:
+        description: 'RPM version if parameter'
+        required: false
+        type: string
+      provided_release:
+        description: 'RPM release if parameter'
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Create SELinux module from sources
+
+    strategy:
+      matrix: 
+        os: ${{ fromJSON(inputs.build_os_matrix) }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+        continue-on-error: ${{ matrix.os }}
+        with:
+          path: ${{ inputs.source_repo_location }}
+        
+      - name: Checkout action from laurent-gaillard actions repository
+        uses: actions/checkout@master
+        with:
+          repository: Laurent-Gaillard/actions
+          ref: ${{ matrix.os }}
+          path: ACTIONS-build
+
+      - name: Call Docker RPM build
+        id: dockerbuild
+        uses: ./ACTIONS-build
+        with:
+          source_repo_location: ${{ inputs.source_repo_location }}
+          spec_file_location: ${{ inputs.spec_file_location }}
+          selinux_files_location: ${{ inputs.selinux_files_location }}
+          provided_version: ${{ inputs.provided_version }}
+          provided_release: ${{ inputs.provided_release }}
+
+      - name: Call Docker RPM sign
+        uses: dante-signal31/rpmsign@v1.0.3
+        with:
+          gpg_private_key: ${{ secrets.RPM_SIGNING_KEY }}
+          gpg_private_key_password: ${{ secrets.RPM_SIGNING_KEY_PASSWORD }}
+          gpg_name: ${{ vars.RPM_SIGNING_KEY_NAME }}
+          rpm_folder: rpmbuild/RPMS/
+          output_folder: rpmbuild/signed-RPMS/
+          
+      - name: Upload RPMs
+        id: upload_rpms
+        run: |
+          UPLOAD_URL=$(sed -e 's/{?name,label}/?name/' <<< '${{ inputs.release_upload_url }}')
+
+          for rpm in $(find rpmbuild/signed-RPMS -type f -name *.rpm)
+          do 
+            RPM_FILE_NAME=$(basename ${rpm})
+            #sha512sum ${rpm} | cut -d " " -f 1 > ${RPM_FILE_NAME}.SHA512
+
+            # Upload RPM
+            curl \
+              -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: application/octet-stream" \
+              -T ${rpm} \
+              ${UPLOAD_URL}=${RPM_FILE_NAME}
+
+            # Upload sha512sum
+            #curl \
+            #  -X POST \
+            #  -H "Accept: application/vnd.github+json" \
+            #  -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            #  -H "Content-Type: text/plain" \
+            #  -T ${RPM_FILE_NAME}.SHA512 \
+            #  ${UPLOAD_URL}=${RPM_FILE_NAME}.SHA512
+          done
