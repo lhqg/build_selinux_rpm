@@ -71,7 +71,7 @@ jobs:
           provided_release: ${{ inputs.provided_release }}
 
       - name: Call Docker RPM sign
-        uses: dante-signal31/rpmsign@v1.0.3
+        uses: lhqg/rpmsign@master
         with:
           gpg_private_key: ${{ secrets.RPM_SIGNING_KEY }}
           gpg_private_key_password: ${{ secrets.RPM_SIGNING_KEY_PASSWORD }}
