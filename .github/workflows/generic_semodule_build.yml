@@ -36,6 +36,21 @@ on:
         description: 'RPM release if parameter'
         required: false
         type: string
+      rpmsign_gpgkey:
+        description: 'GPG private key for RPM signing'
+        required: true
+        default: ''
+        type: string
+      rpmsign_gpgkey_passphrase:
+        description: 'GPG private key pass phrase for RPM signing'
+        required: true
+        default: ''
+        type: string
+      rpmsign_gpgkey_name:
+        description: 'GPGP key name for RPM signing'
+        required: true
+        default: ''
+        type: string
 
 jobs:
   build:
@@ -73,9 +88,9 @@ jobs:
       - name: Call Docker RPM sign
         uses: lhqg/rpmsign@master
         with:
-          gpg_private_key: ${{ secrets.RPM_SIGNING_KEY }}
-          gpg_private_key_password: ${{ secrets.RPM_SIGNING_KEY_PASSWORD }}
-          gpg_name: ${{ vars.RPM_SIGNING_KEY_NAME }}
+          gpg_private_key: ${{ inputs.rpmsign_gpgkey }}
+          gpg_private_key_password: ${{ inputs.rpmsign_gpgkey_passphrase }}
+          gpg_name: ${{ inputs.rpmsign_gpgkey_name }}
           rpm_folder: rpmbuild/RPMS/
           output_folder: rpmbuild/signed-RPMS/
           
