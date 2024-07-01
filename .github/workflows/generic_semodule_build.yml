@@ -57,7 +57,8 @@ jobs:
     env:
       gpg_private_key_file: private_key.gpg
       gpg_private_key: ${{ secrets.gpg_private_key }}
-      signed_rpms_dir: rpmbuild/RPMS/
+      rpms_dir: rpmbuild/RPMS/
+      signed_rpms_dir: rpmbuild/signed-RPMS/
 
     steps:
       - name: Checkout code
@@ -94,8 +95,8 @@ jobs:
           gpg_private_key: ${{ env.gpg_private_key_file }}
           gpg_private_key_password: ${{ secrets.gpg_private_key_password }}
           gpg_name: ${{ vars.RPM_SIGNING_KEY_NAME }}
-          rpm_folder: ${{ env.signed_rpms_dir }}
-          output_folder: rpmbuild/signed-RPMS/
+          rpm_folder: ${{ env.rpms_dir }}
+          output_folder: ${{ env.signed_rpms_dir }}
           
       - name: Upload RPMs
         id: upload_rpms
