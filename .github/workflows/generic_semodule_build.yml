@@ -107,8 +107,12 @@ jobs:
             UPLOAD_URL=$( sed -e 's/{?name,label}/?name/' <<< '${{ inputs.release_upload_url }}' )
             echo "Uploading to ${UPLOAD_URL}"
 
+            ls -la ${signed_rpms_dir}
+
             rc=0
-            for rpm in $(find ${signed_rpms_dir} -type f -name '*.rpm')
+            count=0
+
+            for rpm in $(find $ {signed_rpms_dir} -type f -name '*.rpm' )
             do 
               RPM_FILE_NAME=$(basename ${rpm})
 
@@ -122,7 +126,9 @@ jobs:
                 -T ${rpm} \
                 ${UPLOAD_URL}=${RPM_FILE_NAME}
               rc=$(( $rc + $? ))
+              [ $rc -eq 0 ] && count=$( $count + 1 )
             done
+            echo "Total RPMs uploaded: ${count}."
           else
             echo "Fatal: the signed RPMs directory is not set or does not exist."
             rc=1
