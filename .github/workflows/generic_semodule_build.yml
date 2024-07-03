@@ -88,6 +88,7 @@ jobs:
         run: |
           echo "${gpg_private_key}" | base64 -di > ${gpg_private_key_file}
           ls -la ${rpms_dir}
+          id
           pwd
           #mkdir -p ${signed_rpms_dir}
       
