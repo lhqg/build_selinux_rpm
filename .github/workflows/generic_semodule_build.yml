@@ -87,6 +87,8 @@ jobs:
       - name: Create private key file from secret.
         run: |
           echo "${gpg_private_key}" | base64 -di > ${gpg_private_key_file}
+          ls -la ${env.rpms_dir}
+          pwd
           #mkdir -p ${signed_rpms_dir}
       
       - name: Call Docker RPM sign
