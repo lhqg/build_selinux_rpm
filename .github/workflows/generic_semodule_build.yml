@@ -129,6 +129,7 @@ jobs:
               [ $rc -eq 0 ] && count=$( $count + 1 )
             done
             echo "Total RPMs uploaded: ${count}."
+            [ $count -lt 1 ] && rc=1
           else
             echo "Fatal: the signed RPMs directory is not set or does not exist."
             rc=1
