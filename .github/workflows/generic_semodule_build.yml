@@ -58,7 +58,7 @@ jobs:
       gpg_private_key_file: private_key.gpg
       gpg_private_key: ${{ secrets.gpg_private_key }}
       rpms_dir: rpmbuild/RPMS/
-      signed_rpms_dir: rpmbuild/signed-RPMS/
+      signed_rpms_dir: signed-RPMS/
 
     steps:
       - name: Checkout code
@@ -87,10 +87,7 @@ jobs:
       - name: Create private key file from secret.
         run: |
           echo "${gpg_private_key}" | base64 -di > ${gpg_private_key_file}
-          ls -la ${rpms_dir}
-          id
-          pwd
-          #mkdir -p ${signed_rpms_dir}
+          [ -d ${signed_rpms_dir} ] || mkdir -p ${signed_rpms_dir}
       
       - name: Call Docker RPM sign
         uses: lhqg/rpmsign@master
