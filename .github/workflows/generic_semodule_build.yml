@@ -90,7 +90,7 @@ jobs:
           [ -d ${signed_rpms_dir} ] || mkdir -p ${signed_rpms_dir}
       
       - name: Call Docker RPM sign
-        uses: dante-signal31/rpmsign@master
+        uses: lhqg/rpmsign@master
         with:
           gpg_private_key: ${{ env.gpg_private_key_file }}
           gpg_private_key_password: ${{ secrets.gpg_private_key_password }}
