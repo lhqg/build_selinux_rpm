@@ -90,7 +90,7 @@ jobs:
           [ -d ${signed_rpms_dir} ] || mkdir -p ${signed_rpms_dir}
       
       - name: Call Docker RPM sign
-        uses: lhqg/rpmsign@master
+        uses: dante-signal31/rpmsign@master
         with:
           gpg_private_key: ${{ env.gpg_private_key_file }}
           gpg_private_key_password: ${{ secrets.gpg_private_key_password }}
@@ -112,7 +112,7 @@ jobs:
             rc=0
             count=0
 
-            for rpm in $(find $ {signed_rpms_dir} -type f -name '*.rpm' )
+            for rpm in $( find ${signed_rpms_dir} -type f -name '*.rpm' )
             do 
               RPM_FILE_NAME=$(basename ${rpm})
 
