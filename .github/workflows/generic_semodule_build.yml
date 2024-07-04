@@ -58,7 +58,7 @@ jobs:
       gpg_private_key_file: private_key.gpg
       gpg_private_key: ${{ secrets.gpg_private_key }}
       rpms_dir: rpmbuild/RPMS/
-      signed_rpms_dir: signed-RPMS/
+      #signed_rpms_dir: signed-RPMS/
 
     steps:
       - name: Checkout code
@@ -74,6 +74,11 @@ jobs:
           ref: ${{ matrix.os }}
           path: ACTIONS-build
 
+      - name: Create private key file from secret.
+        run: |
+          echo "${gpg_private_key}" | base64 -di > ${env.gpg_private_key_file}
+          echo "${gpg_private_key_password}" > .${env.gpg_private_key_file}.passphrase
+
       - name: Call Docker RPM build
         id: dockerbuild
         uses: ./ACTIONS-build
@@ -83,36 +88,36 @@ jobs:
           selinux_files_location: ${{ inputs.selinux_files_location }}
           provided_version: ${{ inputs.provided_version }}
           provided_release: ${{ inputs.provided_release }}
-
-      - name: Create private key file from secret.
-        run: |
-          echo "${gpg_private_key}" | base64 -di > ${gpg_private_key_file}
-          [ -d ${signed_rpms_dir} ] || mkdir -p ${signed_rpms_dir}
-      
-      - name: Call Docker RPM sign
-        uses: lhqg/rpmsign@master
-        with:
-          gpg_private_key: ${{ env.gpg_private_key_file }}
-          gpg_private_key_password: ${{ secrets.gpg_private_key_password }}
           gpg_name: ${{ vars.RPM_SIGNING_KEY_NAME }}
-          rpm_folder: ${{ env.rpms_dir }}
-          output_folder: ${{ env.signed_rpms_dir }}
+          gpg_private_key_file: ${{ env.gpg_private_key_file }}
+
+      # - name: Call Docker RPM sign
+      #   uses: lhqg/rpmsign@master
+      #   with:
+      #     gpg_private_key: ${{ env.gpg_private_key_file }}
+      #     gpg_private_key_password: ${{ secrets.gpg_private_key_password }}
+      #     gpg_name: ${{ vars.RPM_SIGNING_KEY_NAME }}
+      #     rpm_folder: ${{ env.rpms_dir }}
+      #     output_folder: ${{ env.signed_rpms_dir }}
           
       - name: Upload RPMs
         id: upload_rpms
         run: |
 
-          if [ -n "${signed_rpms_dir}" -a -d "${signed_rpms_dir}" ]
+          #if [ -n "${signed_rpms_dir}" -a -d "${signed_rpms_dir}" ]
+          if [ -n "${rpms_dir}" -a -d "${rpms_dir}" ]
           then
             UPLOAD_URL=$( sed -e 's/{?name,label}/?name/' <<< '${{ inputs.release_upload_url }}' )
             echo "Uploading to ${UPLOAD_URL}"
 
-            ls -la ${signed_rpms_dir}
+            #ls -la ${signed_rpms_dir}
+            ls -la ${rpms_dir}
 
             rc=0
             count=0
 
-            for rpm in $( find ${signed_rpms_dir} -type f -name '*.rpm' )
+            #for rpm in $( find ${signed_rpms_dir} -type f -name '*.rpm' )
+            for rpm in $( find ${rpms_dir} -type f -name '*.rpm' )
             do 
               RPM_FILE_NAME=$(basename ${rpm})
 
