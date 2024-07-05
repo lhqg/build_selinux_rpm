@@ -57,6 +57,7 @@ jobs:
     env:
       gpg_private_key_file: private_key.gpg
       gpg_private_key: ${{ secrets.gpg_private_key }}
+      gpg_private_key_password: ${{ secrets.gpg_private_key_password }}
       rpms_dir: rpmbuild/RPMS/
       #signed_rpms_dir: signed-RPMS/
 
