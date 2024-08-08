@@ -66,10 +66,10 @@ jobs:
         with:
           path: ${{ inputs.source_repo_location }}
         
-      - name: Checkout action from laurent-gaillard actions repository
+      - name: Checkout action from LHQG action-os-rpmbuild-selinux repository
         uses: actions/checkout@master
         with:
-          repository: Laurent-Gaillard/actions
+          repository: lhqg/action-os-rpmbuild-selinux
           ref: ${{ matrix.os }}
           path: ACTIONS-build
 
